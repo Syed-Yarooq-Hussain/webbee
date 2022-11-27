@@ -1,13 +1,33 @@
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
+import { Workshop } from './entities/workshop.entity';
 import App from "../../app";
+import { transformStringToDate, currentDate } from '../../library/moment'
+import * as moment from 'moment';
 
+interface IEvent {
+  id: number,
+  name: string,
+  createdAt: string,
+  workshops?: IWorkshop[];
+}
+
+interface IWorkshop {
+  id: number,
+  start: string,
+  end: string,
+  eventId: number,
+  name: string,
+  createdAt: string
+}
 
 export class EventsService {
   private eventRepository: Repository<Event>;
+  private workshopRepository: Repository<Workshop>;
 
   constructor(app: App) {
     this.eventRepository = app.getDataSource().getRepository(Event);
+    this.workshopRepository = app.getDataSource().getRepository(Workshop);
   }
 
   async getWarmupEvents() {
@@ -91,10 +111,36 @@ export class EventsService {
     ```
      */
 
-  async getEventsWithWorkshops() {
-    throw new Error('TODO task 1');
+  async getEventsWithWorkshops(isFutureStart: boolean = false) {
+    try{
+      let events = await this.eventRepository.find();
+      let workshops = await this.workshopRepository.find();
+  
+      let eventsWorkshop = await this.attachWorkshopWithEvents(events, workshops, isFutureStart)
+      return eventsWorkshop;
+    }catch(e){
+        throw new Error('TODO task 1');
+    }
   }
 
+  async attachWorkshopWithEvents(events: IEvent[], workshops: IWorkshop[], isFutureStart: boolean) {
+    let futureEvent = [];
+    for(let event of events){
+      let workshopsArray = [];
+      for(let workshop of workshops){
+        if(event.id == workshop.eventId){
+          if(isFutureStart && await transformStringToDate(workshop.start) < await currentDate()){
+            continue
+          }
+          workshopsArray.push(workshop)
+        }
+      }
+      event.workshops = workshopsArray;
+      if(isFutureStart && event.workshops.length > 0)
+        futureEvent.push(event)
+    }
+    return isFutureStart ? futureEvent: events;
+  }
   /* TODO: complete getFutureEventWithWorkshops so that it returns events with workshops, that have not yet started
     Requirements:
     - only events that have not yet started should be included
@@ -162,6 +208,10 @@ export class EventsService {
     ```
      */
   async getFutureEventWithWorkshops() {
-    throw new Error('TODO task 2');
+    try{
+        return this.getEventsWithWorkshops(true)
+    }catch{
+      throw new Error('TODO task 2');
+    }
   }
 }

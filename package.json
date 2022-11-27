@@ -22,5 +22,8 @@
     "express_prisma",
     "express_typeorm",
     "express_sequelize"
-  ]
+  ],
+  "dependencies": {
+    "moment": "^2.29.4"
+  }
 }

@@ -30,13 +30,12 @@ class EventController extends Controller {
     }
 
     async getEventsWithWorkshops(req: Request, res: Response, next: NextFunction) {
-        return await this.eventsService.getEventsWithWorkshops()
-          .then((data) => {
-              res.json(data);
-          })
-          .catch((e: Error) => {
-              next(e);
-          });
+        try{
+            let data = await this.eventsService.getEventsWithWorkshops();
+            res.json(data)
+        }catch(e: any){
+            next(e);
+        }
     }
 
     async getFutureEventWithWorkshops(req: Request, res: Response, next: NextFunction) {
