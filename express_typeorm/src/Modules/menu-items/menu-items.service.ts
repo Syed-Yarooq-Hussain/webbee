@@ -110,10 +110,6 @@ export class MenuItemsService {
 
   addChildMenu = async (menuItems: IMenuItem[] , currentMenu: any) => {
 
-
-    if(menuItems.length == 1)
-        return menuItems;
-
     for(let i=0 ; i < menuItems.length; i++){
         if(currentMenu.id == menuItems[i].parentId){
             menuItems[i].children = []
