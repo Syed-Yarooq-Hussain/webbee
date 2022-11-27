@@ -2,6 +2,16 @@ import { MenuItem } from './entities/menu-item.entity';
 import { Repository } from "typeorm";
 import App from "../../app";
 
+
+interface IMenuItem {
+    id: number,
+    name: string,
+    url: string,
+    parentId: number,
+    createdAt: string,
+    children?: IMenuItem[]
+}
+
 export class MenuItemsService {
 
   private menuItemRepository: Repository<MenuItem>;
@@ -85,7 +95,38 @@ export class MenuItemsService {
     ]
   */
 
-  async getMenuItems() {
-    throw new Error('TODO in task 3');
+   getMenuItems = async () => {
+    try{
+        let menuItems : any= await this.menuItemRepository.find();
+        menuItems[0].children = []
+        await this.addChildMenu(menuItems, menuItems[0]);
+
+        return menuItems;
+    }catch(e){
+        throw new Error('TODO in task 3');    
+    }
+    
   }
+
+  addChildMenu = async (menuItems: IMenuItem[] , currentMenu: any) => {
+
+
+    if(menuItems.length == 1)
+        return menuItems;
+
+    for(let i=0 ; i < menuItems.length; i++){
+        if(currentMenu.id == menuItems[i].parentId){
+            menuItems[i].children = []
+            currentMenu.children.push(menuItems[i])
+            menuItems.splice(i, 1)
+            i--;
+        }
+    }
+
+    for(let j=0 ; j< currentMenu.children.length ; j++ ){
+        await this.addChildMenu(menuItems, currentMenu.children[j])
+    }
+
+    
+  } 
 }
